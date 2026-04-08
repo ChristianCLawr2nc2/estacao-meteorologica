@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Estação Meteorológica IoT{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-brand">
+      <span class="nav-icon">⛅</span>
+      <span class="nav-title">MeteoStation <span class="nav-sub">IoT</span></span>
+    </div>
+    <ul class="nav-links">
+      <li><a href="{{ url_for('index') }}" class="{{ 'active' if request.endpoint == 'index' }}">Dashboard</a></li>
+      <li><a href="{{ url_for('listar') }}" class="{{ 'active' if request.endpoint == 'listar' }}">Histórico</a></li>
+      <li><a href="/api/estatisticas" target="_blank" class="nav-api">API</a></li>
+    </ul>
+    <div class="nav-status">
+      <span class="status-dot"></span>
+      <span class="status-label">Sistema Online</span>
+    </div>
+  </nav>
+
+  <main class="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <span>Engenharia de Computação — Módulo 5 | Inteli &nbsp;·&nbsp; Sistema IoT Meteorológico</span>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

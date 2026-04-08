@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard — Estação Meteorológica IoT{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Dashboard</h1>
+    <p class="page-sub">Monitoramento em tempo real · Últimas 10 leituras</p>
+  </div>
+  <button class="btn btn-ghost" onclick="window.location.reload()">↺ Atualizar</button>
+</div>
+
+<!-- Cards de estatísticas -->
+{% if stats and stats.total %}
+<section class="stats-grid">
+  <div class="stat-card stat-temp">
+    <div class="stat-label">Temperatura Média</div>
+    <div class="stat-value">{{ stats.temp_media or '—' }}<span class="stat-unit">°C</span></div>
+    <div class="stat-range">↓ {{ stats.temp_min }}°C &nbsp;·&nbsp; ↑ {{ stats.temp_max }}°C</div>
+  </div>
+  <div class="stat-card stat-umid">
+    <div class="stat-label">Umidade Média</div>
+    <div class="stat-value">{{ stats.umid_media or '—' }}<span class="stat-unit">%</span></div>
+    <div class="stat-range">↓ {{ stats.umid_min }}% &nbsp;·&nbsp; ↑ {{ stats.umid_max }}%</div>
+  </div>
+  <div class="stat-card stat-pres">
+    <div class="stat-label">Pressão Média</div>
+    <div class="stat-value">{{ stats.pres_media or '—' }}<span class="stat-unit">hPa</span></div>
+    <div class="stat-range">↓ {{ stats.pres_min }} &nbsp;·&nbsp; ↑ {{ stats.pres_max }}</div>
+  </div>
+  <div class="stat-card stat-total">
+    <div class="stat-label">Leituras (24h)</div>
+    <div class="stat-value">{{ stats.total }}</div>
+    <div class="stat-range">registros no banco</div>
+  </div>
+</section>
+{% else %}
+<div class="empty-state">
+  <p>Nenhuma leitura disponível ainda. Inicie o simulador para popular o banco.</p>
+</div>
+{% endif %}
+
+<!-- Gráfico temporal -->
+<section class="chart-section">
+  <div class="section-header">
+    <h2 class="section-title">Variação Temporal</h2>
+    <span class="section-badge">Últimas 30 leituras</span>
+  </div>
+  <div class="chart-container">
+    <canvas id="graficoTemporal"></canvas>
+  </div>
+</section>
+
+<!-- Últimas leituras -->
+<section class="readings-section">
+  <div class="section-header">
+    <h2 class="section-title">Leituras Recentes</h2>
+    <a href="{{ url_for('listar') }}" class="btn btn-sm">Ver todas →</a>
+  </div>
+
+  {% if leituras %}
+  <div class="cards-grid">
+    {% for l in leituras %}
+    <div class="reading-card">
+      <div class="reading-top">
+        <span class="reading-id">#{{ l.id }}</span>
+        <span class="reading-loc">{{ l.localizacao }}</span>
+      </div>
+      <div class="reading-metrics">
+        <div class="metric">
+          <span class="metric-icon">🌡</span>
+          <span class="metric-val">{{ l.temperatura }}°C</span>
+          <span class="metric-label">Temp.</span>
+        </div>
+        <div class="metric">
+          <span class="metric-icon">💧</span>
+          <span class="metric-val">{{ l.umidade }}%</span>
+          <span class="metric-label">Umid.</span>
+        </div>
+        {% if l.pressao %}
+        <div class="metric">
+          <span class="metric-icon">🔵</span>
+          <span class="metric-val">{{ l.pressao }}</span>
+          <span class="metric-label">hPa</span>
+        </div>
+        {% endif %}
+      </div>
+      <div class="reading-time">{{ l.timestamp }}</div>
+      <div class="reading-actions">
+        <a href="{{ url_for('editar_form', id=l.id) }}" class="btn btn-xs">Editar</a>
+        <a href="{{ url_for('detalhe', id=l.id) }}?formato=json" target="_blank" class="btn btn-xs btn-ghost">JSON</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <p>Nenhuma leitura ainda. Inicie o <code>serial_reader.py</code> para começar.</p>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // Dados do gráfico passados pelo Flask via Jinja2
+  const graficoDados = {{ grafico | tojson }};
+
+  if (graficoDados && graficoDados.length > 0) {
+    const labels  = graficoDados.map(d => d.timestamp.slice(11, 16));
+    const temps   = graficoDados.map(d => d.temperatura);
+    const umids   = graficoDados.map(d => d.umidade);
+    const pressoes = graficoDados.map(d => d.pressao);
+
+    const ctx = document.getElementById('graficoTemporal').getContext('2d');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Temperatura (°C)',
+            data: temps,
+            borderColor: '#f97316',
+            backgroundColor: 'rgba(249,115,22,0.08)',
+            tension: 0.4,
+            fill: true,
+            pointRadius: 3,
+            pointHoverRadius: 6,
+          },
+          {
+            label: 'Umidade (%)',
+            data: umids,
+            borderColor: '#38bdf8',
+            backgroundColor: 'rgba(56,189,248,0.06)',
+            tension: 0.4,
+            fill: true,
+            pointRadius: 3,
+            pointHoverRadius: 6,
+          },
+          {
+            label: 'Pressão (hPa / 10)',
+            data: pressoes.map(p => p ? p / 10 : null),
+            borderColor: '#a78bfa',
+            backgroundColor: 'rgba(167,139,250,0.05)',
+            tension: 0.4,
+            fill: false,
+            pointRadius: 2,
+            borderDash: [4, 3],
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: {
+            labels: { color: '#94a3b8', font: { family: 'Space Mono', size: 11 } }
+          },
+          tooltip: {
+            backgroundColor: '#1e293b',
+            borderColor: '#334155',
+            borderWidth: 1,
+            titleColor: '#e2e8f0',
+            bodyColor: '#94a3b8',
+          }
+        },
+        scales: {
+          x: {
+            ticks: { color: '#475569', font: { family: 'Space Mono', size: 10 } },
+            grid: { color: '#1e293b' }
+          },
+          y: {
+            ticks: { color: '#475569', font: { family: 'Space Mono', size: 10 } },
+            grid: { color: '#1e293b' }
+          }
+        }
+      }
+    });
+  }
+</script>
+{% endblock %}

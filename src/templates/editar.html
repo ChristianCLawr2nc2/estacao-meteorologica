@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Leitura #{{ leitura.id }} — Estação Meteorológica IoT{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Editar Leitura</h1>
+    <p class="page-sub">Registro #{{ leitura.id }} · {{ leitura.timestamp }}</p>
+  </div>
+  <a href="{{ url_for('listar') }}" class="btn btn-ghost">← Voltar</a>
+</div>
+
+<div class="form-container">
+  <form action="{{ url_for('atualizar', id=leitura.id) }}" method="POST" class="edit-form">
+    <input type="hidden" name="_method" value="PUT">
+
+    <div class="form-group">
+      <label class="form-label" for="temperatura">Temperatura (°C)</label>
+      <input
+        type="number"
+        step="0.1"
+        id="temperatura"
+        name="temperatura"
+        class="form-input"
+        value="{{ leitura.temperatura }}"
+        required
+        min="-50"
+        max="80"
+      >
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="umidade">Umidade (%)</label>
+      <input
+        type="number"
+        step="0.1"
+        id="umidade"
+        name="umidade"
+        class="form-input"
+        value="{{ leitura.umidade }}"
+        required
+        min="0"
+        max="100"
+      >
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="pressao">Pressão Atmosférica (hPa) <span class="optional">— opcional</span></label>
+      <input
+        type="number"
+        step="0.1"
+        id="pressao"
+        name="pressao"
+        class="form-input"
+        value="{{ leitura.pressao if leitura.pressao else '' }}"
+        min="800"
+        max="1200"
+      >
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="localizacao">Localização</label>
+      <input
+        type="text"
+        id="localizacao"
+        name="localizacao"
+        class="form-input"
+        value="{{ leitura.localizacao }}"
+        maxlength="100"
+      >
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+      <a href="{{ url_for('listar') }}" class="btn btn-ghost">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

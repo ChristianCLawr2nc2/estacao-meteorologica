@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}Histórico — Estação Meteorológica IoT{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Histórico</h1>
+    <p class="page-sub">{{ total }} registros no banco · Página {{ pagina }} de {{ total_paginas }}</p>
+  </div>
+  <a href="{{ url_for('listar') }}?formato=json" target="_blank" class="btn btn-ghost">Exportar JSON</a>
+</div>
+
+{% if leituras %}
+<div class="table-wrapper">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>#ID</th>
+        <th>Temperatura</th>
+        <th>Umidade</th>
+        <th>Pressão</th>
+        <th>Localização</th>
+        <th>Timestamp</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for l in leituras %}
+      <tr>
+        <td class="td-id">{{ l.id }}</td>
+        <td>
+          <span class="badge badge-temp">{{ l.temperatura }}°C</span>
+        </td>
+        <td>
+          <span class="badge badge-umid">{{ l.umidade }}%</span>
+        </td>
+        <td>{{ l.pressao if l.pressao else '—' }} {% if l.pressao %}<small>hPa</small>{% endif %}</td>
+        <td>{{ l.localizacao }}</td>
+        <td class="td-ts">{{ l.timestamp }}</td>
+        <td class="td-actions">
+          <a href="{{ url_for('editar_form', id=l.id) }}" class="btn btn-xs">Editar</a>
+          <form action="{{ url_for('deletar_form', id=l.id) }}" method="POST" style="display:inline"
+                onsubmit="return confirm('Deletar leitura #{{ l.id }}?')">
+            <button type="submit" class="btn btn-xs btn-danger">Deletar</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Paginação -->
+<div class="pagination">
+  {% if pagina > 1 %}
+    <a href="{{ url_for('listar', pagina=pagina-1, por_pagina=por_pagina) }}" class="btn btn-sm">← Anterior</a>
+  {% endif %}
+
+  <span class="pag-info">{{ pagina }} / {{ total_paginas }}</span>
+
+  {% if pagina < total_paginas %}
+    <a href="{{ url_for('listar', pagina=pagina+1, por_pagina=por_pagina) }}" class="btn btn-sm">Próxima →</a>
+  {% endif %}
+</div>
+
+{% else %}
+<div class="empty-state">
+  <p>Nenhuma leitura encontrada. Inicie o simulador para popular o banco de dados.</p>
+</div>
+{% endif %}
+{% endblock %}

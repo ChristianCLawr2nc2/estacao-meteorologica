@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Leitura #{{ leitura.id }} — Estação Meteorológica IoT{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Leitura #{{ leitura.id }}</h1>
+    <p class="page-sub">{{ leitura.localizacao }} · {{ leitura.timestamp }}</p>
+  </div>
+  <a href="{{ url_for('listar') }}" class="btn btn-ghost">← Histórico</a>
+</div>
+
+<div class="detail-grid">
+  <div class="detail-card detail-temp">
+    <div class="detail-label">Temperatura</div>
+    <div class="detail-value">{{ leitura.temperatura }}<span class="detail-unit">°C</span></div>
+  </div>
+  <div class="detail-card detail-umid">
+    <div class="detail-label">Umidade Relativa</div>
+    <div class="detail-value">{{ leitura.umidade }}<span class="detail-unit">%</span></div>
+  </div>
+  {% if leitura.pressao %}
+  <div class="detail-card detail-pres">
+    <div class="detail-label">Pressão Atmosférica</div>
+    <div class="detail-value">{{ leitura.pressao }}<span class="detail-unit">hPa</span></div>
+  </div>
+  {% endif %}
+</div>
+
+<div class="detail-actions">
+  <a href="{{ url_for('editar_form', id=leitura.id) }}" class="btn btn-primary">Editar</a>
+  <a href="{{ url_for('detalhe', id=leitura.id) }}?formato=json" target="_blank" class="btn btn-ghost">Ver JSON</a>
+  <form action="{{ url_for('deletar_form', id=leitura.id) }}" method="POST" style="display:inline"
+        onsubmit="return confirm('Tem certeza que deseja deletar a leitura #{{ leitura.id }}?')">
+    <button type="submit" class="btn btn-danger">Deletar</button>
+  </form>
+</div>
+{% endblock %}
