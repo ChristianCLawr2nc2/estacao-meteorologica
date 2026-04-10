@@ -24,7 +24,7 @@ Arduino → Serial USB → serial_reader.py → POST → API Flask → SQLite �
 | Banco de dados | Populado em tempo real | Pré-populado com **50 leituras** de exemplo via script |
 | Restante | — | Implementado conforme especificado |
 
-**Justificativa:** o desenvolvimento foi realizado em ambiente sem acesso a hardware físico (Arduino/ESP32 + sensores). O simulador `serial_reader.py` (modo `MODE=simular`) gera dados com variação senoidal realista, reproduzindo o comportamento de temperatura e umidade ao longo do dia. Quando o hardware estiver disponível, basta definir `MODE=serial` e configurar a porta em `config.py`.
+**Justificativa:** o desenvolvimento foi realizado em ambiente sem acesso a hardware físico (Arduino/ESP32 + sensores). O simulador `serial_reader.py` (modo `MODE=simular`) gera dados com variação senoidal realista, reproduzindo o comportamento de temperatura e umidade ao longo do dia.
 
 O sketch `arduino/estacao.ino` também possui `#define SIMULAR true` para testes sem sensores reais.
 
